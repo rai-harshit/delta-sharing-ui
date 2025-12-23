@@ -61,7 +61,7 @@ describe('LoginPage', () => {
       expect(screen.getByRole('button', { name: /sign in/i })).not.toBeDisabled()
     })
     
-    expect(screen.getByText(/sign in/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument()
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
     expect(screen.getByLabelText('Password')).toBeInTheDocument()
   })
