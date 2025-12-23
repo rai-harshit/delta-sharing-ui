@@ -1,5 +1,5 @@
 # Backend Production Dockerfile
-FROM node:20-alpine AS builder
+FROM node:25-alpine AS builder
 
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
@@ -15,7 +15,7 @@ RUN npx prisma generate
 RUN pnpm build
 
 # Production image
-FROM node:20-alpine AS runner
+FROM node:25-alpine AS runner
 
 WORKDIR /app
 
