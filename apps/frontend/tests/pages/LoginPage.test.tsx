@@ -13,6 +13,8 @@ import { AuthProvider } from '@/context/AuthContext'
 vi.mock('@/lib/api', () => ({
   api: {
     login: vi.fn(),
+    getMe: vi.fn().mockRejectedValue(new Error('Not authenticated')),
+    fetchCsrfToken: vi.fn().mockResolvedValue(undefined),
   },
 }))
 
@@ -51,17 +53,26 @@ describe('LoginPage', () => {
     queryClient.clear()
   })
 
-  it('should render login form', () => {
+  it('should render login form', async () => {
     renderLoginPage()
+    
+    // Wait for loading state to complete
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /sign in/i })).not.toBeDisabled()
+    })
     
     expect(screen.getByText(/sign in/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
     expect(screen.getByLabelText('Password')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument()
   })
 
   it('should show validation error for empty email', async () => {
     renderLoginPage()
+    
+    // Wait for loading state to complete
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /sign in/i })).not.toBeDisabled()
+    })
     
     const submitButton = screen.getByRole('button', { name: /sign in/i })
     fireEvent.click(submitButton)
@@ -72,8 +83,12 @@ describe('LoginPage', () => {
     })
   })
 
-  it('should allow typing in email field', () => {
+  it('should allow typing in email field', async () => {
     renderLoginPage()
+    
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /sign in/i })).not.toBeDisabled()
+    })
     
     const emailInput = screen.getByLabelText(/email/i)
     fireEvent.change(emailInput, { target: { value: 'test@example.com' } })
@@ -81,8 +96,12 @@ describe('LoginPage', () => {
     expect(emailInput).toHaveValue('test@example.com')
   })
 
-  it('should allow typing in password field', () => {
+  it('should allow typing in password field', async () => {
     renderLoginPage()
+    
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /sign in/i })).not.toBeDisabled()
+    })
     
     const passwordInput = screen.getByLabelText('Password')
     fireEvent.change(passwordInput, { target: { value: 'mypassword123' } })
@@ -90,15 +109,23 @@ describe('LoginPage', () => {
     expect(passwordInput).toHaveValue('mypassword123')
   })
 
-  it('should have password field with type password', () => {
+  it('should have password field with type password', async () => {
     renderLoginPage()
+    
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /sign in/i })).not.toBeDisabled()
+    })
     
     const passwordInput = screen.getByLabelText('Password')
     expect(passwordInput).toHaveAttribute('type', 'password')
   })
 
-  it('should display the Delta Sharing branding', () => {
+  it('should display the Delta Sharing branding', async () => {
     renderLoginPage()
+    
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /sign in/i })).not.toBeDisabled()
+    })
     
     expect(screen.getByText(/delta sharing/i)).toBeInTheDocument()
   })

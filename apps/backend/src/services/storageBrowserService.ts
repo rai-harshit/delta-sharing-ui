@@ -320,7 +320,7 @@ items.push({
           // Try to get metadata
           let version = 0;
           let numFiles = 0;
-          let sizeBytes = 0;
+          const sizeBytes = 0;
 
           try {
             const deltaLogItems = await this.listPath(configId, bucket, `${currentPath}/_delta_log`.replace(/^\//, ''));

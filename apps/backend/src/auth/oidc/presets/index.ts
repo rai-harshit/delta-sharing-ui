@@ -120,7 +120,7 @@ export function createOIDCConfigFromEnv(): OIDCConfig | null {
     case 'okta':
       providerConfig = createOktaConfig();
       break;
-    case 'oidc':
+    case 'oidc': {
       const issuerUrl = process.env.OIDC_ISSUER_URL;
       const clientId = process.env.OIDC_CLIENT_ID;
       const clientSecret = process.env.OIDC_CLIENT_SECRET;
@@ -128,6 +128,7 @@ export function createOIDCConfigFromEnv(): OIDCConfig | null {
         providerConfig = { issuerUrl, clientId, clientSecret };
       }
       break;
+    }
   }
   
   if (!providerConfig) {
