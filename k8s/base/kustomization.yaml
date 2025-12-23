@@ -1,0 +1,26 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: delta-sharing
+
+resources:
+  - namespace.yaml
+  - postgres.yaml
+  - configmap.yaml
+  - secrets.yaml
+  - backend-deployment.yaml
+  - frontend-deployment.yaml
+  - ingress.yaml
+
+commonLabels:
+  app.kubernetes.io/part-of: delta-sharing-ui
+  app.kubernetes.io/version: "1.0.0"
+
+
+
+
+
+
+
+
+

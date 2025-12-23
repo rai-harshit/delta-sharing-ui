@@ -1,0 +1,34 @@
+{{- if .Values.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "delta-sharing-ui.fullname" . }}-backend
+  labels:
+    {{- include "delta-sharing-ui.backendLabels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "delta-sharing-ui.backendSelectorLabels" . | nindent 6 }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "delta-sharing-ui.fullname" . }}-frontend
+  labels:
+    {{- include "delta-sharing-ui.frontendLabels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "delta-sharing-ui.frontendSelectorLabels" . | nindent 6 }}
+{{- end }}
+
+
+
+
+
+
+
+
+

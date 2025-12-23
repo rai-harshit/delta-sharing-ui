@@ -1,0 +1,67 @@
+{
+  "name": "delta-sharing-ui",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Open-Source UI for Self-Hosted Delta Sharing",
+  "scripts": {
+    "dev": "pnpm --parallel run dev",
+    "dev:backend": "pnpm --filter @delta-sharing-ui/backend dev",
+    "dev:frontend": "pnpm --filter @delta-sharing-ui/frontend dev",
+    "build": "pnpm --parallel run build",
+    "build:backend": "pnpm --filter @delta-sharing-ui/backend build",
+    "build:frontend": "pnpm --filter @delta-sharing-ui/frontend build",
+    "lint": "pnpm --parallel run lint",
+    "lint:fix": "pnpm --parallel run lint -- --fix",
+    "test": "pnpm --parallel run test",
+    "test:ci": "pnpm --parallel run test -- --ci",
+    "clean": "pnpm --parallel run clean",
+    "prepare": "husky install",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\""
+  },
+  "keywords": [
+    "delta-sharing",
+    "data-sharing",
+    "delta-lake",
+    "ui",
+    "dashboard"
+  ],
+  "author": "",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "devDependencies": {
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.1.1"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

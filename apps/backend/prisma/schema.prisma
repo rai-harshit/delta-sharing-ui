@@ -1,0 +1,247 @@
+// Prisma schema for Delta Sharing UI
+// This schema defines the database structure for managing shares, recipients, and access control
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Shares - Data shares that can be accessed by recipients
+model Share {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  comment     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  
+  // Relations
+  schemas     Schema[]
+  accessGrants AccessGrant[]
+  
+  @@map("shares")
+}
+
+// Schemas within a share
+model Schema {
+  id        String   @id @default(cuid())
+  name      String
+  shareId   String
+  createdAt DateTime @default(now())
+  
+  // Relations
+  share     Share    @relation(fields: [shareId], references: [id], onDelete: Cascade)
+  tables    Table[]
+  
+  @@unique([shareId, name])
+  @@map("schemas")
+}
+
+// Tables within a schema
+model Table {
+  id           String   @id @default(cuid())
+  name         String   // Internal table name (actual path reference)
+  alias        String?  // Display name shown to recipients (if different from name)
+  schemaId     String
+  location     String   // Path to the Delta table (s3://, file://, etc.)
+  comment      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relations
+  schema       Schema   @relation(fields: [schemaId], references: [id], onDelete: Cascade)
+  
+  @@unique([schemaId, name])
+  @@map("tables")
+}
+
+// Recipients - External parties that can access shares
+model Recipient {
+  id           String   @id @default(cuid())
+  name         String   @unique
+  email        String?
+  comment      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relations
+  tokens       RecipientToken[]
+  accessGrants AccessGrant[]
+  auditLogs    AuditLog[]
+  
+  @@map("recipients")
+}
+
+// Bearer tokens for recipients
+model RecipientToken {
+  id           String    @id @default(cuid())
+  recipientId  String
+  token        String    @unique  // Hashed bearer token
+  tokenHint    String    // First 8 chars for display
+  expiresAt    DateTime?
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  lastUsedAt   DateTime?
+  
+  // Relations
+  recipient    Recipient @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  
+  @@map("recipient_tokens")
+}
+
+// Access grants - Maps recipients to shares they can access
+model AccessGrant {
+  id              String   @id @default(cuid())
+  recipientId     String
+  shareId         String
+  grantedAt       DateTime @default(now())
+  grantedBy       String?
+  expiresAt       DateTime?
+  
+  // Permission flags
+  canDownload     Boolean  @default(true)   // Allow full data download
+  canQuery        Boolean  @default(true)   // Allow data queries
+  maxRowsPerQuery Int?                       // Limit rows per query
+  
+  // Relations
+  recipient   Recipient @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  share       Share     @relation(fields: [shareId], references: [id], onDelete: Cascade)
+  
+  @@unique([recipientId, shareId])
+  @@map("access_grants")
+}
+
+// Admin users (for provider console)
+model AdminUser {
+  id                 String   @id @default(cuid())
+  email              String   @unique
+  passwordHash       String?  // Nullable for SSO-only users
+  name               String?
+  role               String   @default("admin") // admin, editor, viewer
+  mustChangePassword Boolean  @default(true)
+  
+  // SSO fields
+  ssoProvider        String?  // 'azure', 'okta', 'oidc'
+  ssoSubject         String?  // Provider's unique user ID
+  ssoMetadata        Json?    // Additional provider data (groups, etc.)
+  
+  // Account security
+  failedLoginAttempts Int      @default(0)
+  lockedUntil        DateTime?
+  
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  lastLoginAt        DateTime?
+  
+  @@unique([ssoProvider, ssoSubject])
+  @@map("admin_users")
+}
+
+// Audit logs for tracking access
+model AuditLog {
+  id           String   @id @default(cuid())
+  timestamp    DateTime @default(now())
+  action       String   // query, metadata, list_shares, etc.
+  recipientId  String?
+  shareName    String?
+  schemaName   String?
+  tableName    String?
+  ipAddress    String?
+  userAgent    String?
+  status       String   // success, error
+  errorMessage String?
+  rowsAccessed Int?
+  bytesRead    Int?
+  durationMs   Int?
+  
+  // Relations
+  recipient    Recipient? @relation(fields: [recipientId], references: [id], onDelete: SetNull)
+  
+  @@index([timestamp])
+  @@index([recipientId])
+  @@index([shareName])
+  @@map("audit_logs")
+}
+
+// Storage configurations for cloud providers (S3, Azure, GCS)
+model StorageConfig {
+  id          String   @id @default(cuid())
+  name        String   @unique  // e.g., "production-s3", "analytics-azure"
+  type        String   // s3, azure, gcs
+  isDefault   Boolean  @default(false)
+  
+  // S3 fields
+  s3Region        String?
+  s3AccessKeyId   String?  // Encrypted
+  s3SecretKey     String?  // Encrypted
+  s3Endpoint      String?  // For MinIO/LocalStack
+  
+  // Azure fields
+  azureAccount       String?
+  azureAccessKey     String?  // Encrypted
+  azureConnectionStr String?  // Encrypted (alternative auth)
+  
+  // GCS fields
+  gcsProjectId       String?
+  gcsKeyFile         String?  // Encrypted JSON key
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  
+  @@map("storage_configs")
+}
+
+// System configuration for internal operations
+model SystemConfig {
+  id           String   @id @default("system")
+  adminToken   String?  // Encrypted internal token for OSS server access
+  adminRecipientId String? // ID of the __system__ recipient
+  updatedAt    DateTime @updatedAt
+  
+  @@map("system_config")
+}
+
+// Webhook configurations for external notifications
+model Webhook {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  url         String
+  secret      String?  // Encrypted - for HMAC signing
+  enabled     Boolean  @default(true)
+  events      String[] // Array of event types to subscribe to
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  
+  // Relations
+  deliveries  WebhookDelivery[]
+  
+  @@map("webhooks")
+}
+
+// Webhook delivery history for debugging
+model WebhookDelivery {
+  id          String   @id @default(cuid())
+  webhookId   String
+  event       String
+  payload     Json
+  statusCode  Int?
+  success     Boolean
+  error       String?
+  durationMs  Int
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  webhook     Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+  
+  @@index([webhookId])
+  @@index([createdAt])
+  @@map("webhook_deliveries")
+}
+

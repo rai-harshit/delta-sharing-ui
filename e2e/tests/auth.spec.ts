@@ -1,0 +1,115 @@
+import { test, expect } from '@playwright/test';
+
+/**
+ * Authentication E2E Tests
+ */
+
+test.describe('Authentication', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/login');
+  });
+
+  test('should display login form', async ({ page }) => {
+    // Check for login form elements
+    await expect(page.getByLabel(/email/i)).toBeVisible();
+    await expect(page.getByLabel(/password/i)).toBeVisible();
+    await expect(page.getByRole('button', { name: /sign in/i })).toBeVisible();
+  });
+
+  test('should show error with invalid credentials', async ({ page }) => {
+    // Fill in invalid credentials
+    await page.getByLabel(/email/i).fill('invalid@example.com');
+    await page.getByLabel(/password/i).fill('wrongpassword');
+    
+    // Click sign in
+    await page.getByRole('button', { name: /sign in/i }).click();
+    
+    // Should show error message
+    await expect(page.getByText(/invalid|incorrect|error/i)).toBeVisible({ timeout: 10000 });
+  });
+
+  test('should login with valid credentials', async ({ page }) => {
+    // Fill in valid credentials (default admin)
+    await page.getByLabel(/email/i).fill('admin@example.com');
+    await page.getByLabel(/password/i).fill('admin123');
+    
+    // Click sign in
+    await page.getByRole('button', { name: /sign in/i }).click();
+    
+    // Should redirect to dashboard
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 });
+  });
+
+  test('should require email field', async ({ page }) => {
+    // Leave email empty, fill password
+    await page.getByLabel(/password/i).fill('somepassword');
+    
+    // Try to submit
+    await page.getByRole('button', { name: /sign in/i }).click();
+    
+    // Should still be on login page
+    await expect(page).toHaveURL(/\/login/);
+  });
+
+  test('should require password field', async ({ page }) => {
+    // Fill email, leave password empty
+    await page.getByLabel(/email/i).fill('test@example.com');
+    
+    // Try to submit
+    await page.getByRole('button', { name: /sign in/i }).click();
+    
+    // Should still be on login page
+    await expect(page).toHaveURL(/\/login/);
+  });
+
+  test('should navigate to recipient portal', async ({ page }) => {
+    // Look for recipient portal link
+    const recipientLink = page.getByRole('link', { name: /recipient|data consumer/i });
+    
+    if (await recipientLink.isVisible()) {
+      await recipientLink.click();
+      await expect(page).toHaveURL(/\/recipient/);
+    }
+  });
+});
+
+test.describe('Authenticated Admin', () => {
+  test.beforeEach(async ({ page }) => {
+    // Login before each test
+    await page.goto('/login');
+    await page.getByLabel(/email/i).fill('admin@example.com');
+    await page.getByLabel(/password/i).fill('admin123');
+    await page.getByRole('button', { name: /sign in/i }).click();
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 });
+  });
+
+  test('should access dashboard', async ({ page }) => {
+    await expect(page.getByText(/dashboard|overview/i)).toBeVisible();
+  });
+
+  test('should logout successfully', async ({ page }) => {
+    // Find and click logout (might be in dropdown)
+    const userMenu = page.getByRole('button', { name: /user|profile|menu/i });
+    if (await userMenu.isVisible()) {
+      await userMenu.click();
+    }
+    
+    const logoutButton = page.getByRole('button', { name: /logout|sign out/i });
+    if (await logoutButton.isVisible()) {
+      await logoutButton.click();
+      await expect(page).toHaveURL(/\/login/);
+    }
+  });
+
+  test('should navigate to shares page', async ({ page }) => {
+    await page.getByRole('link', { name: /shares/i }).click();
+    await expect(page).toHaveURL(/\/shares/);
+  });
+
+  test('should navigate to recipients page', async ({ page }) => {
+    await page.getByRole('link', { name: /recipients/i }).click();
+    await expect(page).toHaveURL(/\/recipients/);
+  });
+});
+
+

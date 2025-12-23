@@ -1,0 +1,175 @@
+# Delta Sharing UI - Docker Compose with Deployment Profiles
+#
+# Three deployment modes:
+#   1. Full (default): docker-compose up
+#   2. Provider only:  docker-compose --profile provider up
+#   3. Recipient only: docker-compose --profile recipient up
+#
+# Or use the profile-specific compose files for simpler commands.
+
+version: '3.8'
+
+services:
+  # ============================================
+  # Backend (Provider & Full modes only)
+  # ============================================
+  backend:
+    profiles: ["full", "provider", "default"]
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      # Core settings
+      - NODE_ENV=production
+      - PORT=5000
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-password}@postgres:5432/delta_ui
+      
+      # Security (REQUIRED - generate with: openssl rand -hex 32)
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:?ENCRYPTION_KEY is required for storing cloud credentials}
+      - CORS_ORIGIN=${CORS_ORIGIN:-*}
+      
+      # Delta Sharing endpoint (for recipient credentials)
+      - DELTA_SHARING_ENDPOINT=${DELTA_SHARING_ENDPOINT:-http://localhost:5000/api/delta}
+      
+      # AWS S3 (optional - can configure via UI instead)
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - AWS_S3_ENDPOINT=${AWS_S3_ENDPOINT:-}
+      
+      # Azure Blob Storage (optional)
+      - AZURE_STORAGE_CONNECTION_STRING=${AZURE_STORAGE_CONNECTION_STRING:-}
+      
+      # GCS (uses mounted key file)
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/gcp-key.json
+      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT:-}
+      
+      # Redis (optional - for distributed rate limiting)
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+    volumes:
+      # Mount GCP service account key if using GCS
+      - ${GCP_KEY_FILE:-/dev/null}:/app/gcp-key.json:ro
+      # Mount local data directory for local Delta tables
+      - ${DATA_DIR:-./data}:/app/data:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - delta-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ============================================
+  # Frontend - Full Mode (Provider + Recipient)
+  # ============================================
+  frontend:
+    profiles: ["full", "default"]
+    build:
+      context: ./apps/frontend
+      dockerfile: Dockerfile
+      args:
+        - BUILD_MODE=full
+        - VITE_API_URL=${VITE_API_URL:-http://localhost:5000}
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - delta-network
+    restart: unless-stopped
+
+  # ============================================
+  # Frontend - Provider Only Mode
+  # ============================================
+  frontend-provider:
+    profiles: ["provider"]
+    build:
+      context: ./apps/frontend
+      dockerfile: Dockerfile
+      args:
+        - BUILD_MODE=provider
+        - VITE_API_URL=${VITE_API_URL:-http://localhost:5000}
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - delta-network
+    restart: unless-stopped
+
+  # ============================================
+  # Frontend - Recipient Only Mode
+  # No backend dependency! Pure static SPA.
+  # ============================================
+  frontend-recipient:
+    profiles: ["recipient"]
+    build:
+      context: ./apps/frontend
+      dockerfile: Dockerfile.recipient
+    ports:
+      - "3000:80"
+    # NO depends_on - this is a standalone static app!
+    networks:
+      - delta-network
+    restart: unless-stopped
+
+  # ============================================
+  # PostgreSQL Database (Provider & Full modes only)
+  # ============================================
+  postgres:
+    profiles: ["full", "provider", "default"]
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=delta_ui
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - delta-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # Redis Cache (Provider & Full modes only)
+  # ============================================
+  redis:
+    profiles: ["full", "provider", "default"]
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - delta-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
+
+networks:
+  delta-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

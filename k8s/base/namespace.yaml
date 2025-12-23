@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: delta-sharing
+  labels:
+    app.kubernetes.io/name: delta-sharing-ui
+    app.kubernetes.io/part-of: delta-sharing
+
+
+
+
+
+
+
+
+

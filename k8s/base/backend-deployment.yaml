@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: delta-sharing-backend
+  namespace: delta-sharing
+  labels:
+    app.kubernetes.io/name: delta-sharing-backend
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: delta-sharing-ui
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: delta-sharing-backend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: delta-sharing-backend
+        app.kubernetes.io/component: backend
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/your-org/delta-sharing-ui-backend:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 5000
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: delta-sharing-config
+            - secretRef:
+                name: delta-sharing-secrets
+          env:
+            - name: PORT
+              value: "5000"
+            - name: NODE_ENV
+              value: "production"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 3
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+      serviceAccountName: delta-sharing-backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: delta-sharing-backend
+  namespace: delta-sharing
+  labels:
+    app.kubernetes.io/name: delta-sharing-backend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5000
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: delta-sharing-backend
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: delta-sharing-backend
+  namespace: delta-sharing
+
+
+
+
+
+
+
+
+

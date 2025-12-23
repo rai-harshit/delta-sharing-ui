@@ -1,0 +1,21 @@
+# Backend Development Dockerfile with hot reload
+FROM node:20-alpine
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml* ./
+COPY prisma ./prisma/
+RUN pnpm install
+
+COPY . .
+
+# Generate Prisma client
+RUN npx prisma generate
+
+EXPOSE 5000
+
+# Default command - can be overridden in docker-compose
+CMD ["pnpm", "dev"]

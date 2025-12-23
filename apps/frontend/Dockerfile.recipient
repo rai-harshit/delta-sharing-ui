@@ -1,0 +1,71 @@
+# Recipient Portal Only - Ultra-lightweight Docker image
+#
+# This builds ONLY the Recipient Portal as a static SPA.
+# No backend required - talks directly to any Delta Sharing server.
+#
+# Usage:
+#   docker build -f Dockerfile.recipient -t delta-sharing-ui:recipient-only .
+#   docker run -p 8080:80 delta-sharing-ui:recipient-only
+#
+# Size: ~25MB (nginx:alpine + static files)
+
+FROM node:20-alpine AS base
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+WORKDIR /app
+
+# Dependencies stage
+FROM base AS deps
+
+COPY package.json pnpm-lock.yaml* ./
+RUN pnpm install --frozen-lockfile
+
+# Build stage
+FROM base AS build
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Build recipient-only mode
+ENV VITE_BUILD_MODE=recipient
+
+RUN echo "🔧 Building Recipient Portal (standalone)"
+RUN pnpm build:recipient
+
+# Production stage - minimal nginx
+FROM nginx:alpine AS production
+
+# Labels
+LABEL org.opencontainers.image.title="Delta Sharing Recipient Portal"
+LABEL org.opencontainers.image.description="Standalone UI for accessing Delta Sharing data"
+LABEL delta-sharing.build-mode="recipient"
+
+# Custom nginx config for SPA
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy built files
+COPY --from=build /app/dist-recipient /usr/share/nginx/html
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget --quiet --tries=1 --spider http://localhost:80/ || exit 1
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
+
+
+
+
+
+
+
+
+
+
+
+
+
+

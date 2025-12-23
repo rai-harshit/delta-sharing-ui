@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: delta-sharing-config
+  namespace: delta-sharing
+  labels:
+    app.kubernetes.io/name: delta-sharing-ui
+data:
+  # Database connection (host, not URL - URL is in secret)
+  DB_HOST: "postgres"
+  DB_PORT: "5432"
+  DB_NAME: "delta_sharing"
+  
+  # Application settings
+  CORS_ORIGIN: "*"
+  
+  # Delta Sharing endpoint (for hybrid mode)
+  # DELTA_SHARING_ENDPOINT: "https://your-delta-sharing-server/delta"
+  
+  # Hybrid mode settings
+  # HYBRID_MODE: "true"
+  # CONFIG_DIR: "/config"
+
+
+
+
+
+
+
+
+
