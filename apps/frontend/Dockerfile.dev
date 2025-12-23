@@ -2,12 +2,14 @@
 FROM node:20-alpine
 
 # Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10 --activate
 
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install
+COPY package.json ./
+
+# Install without lockfile for dev (lockfile is at monorepo root)
+RUN pnpm install --no-frozen-lockfile
 
 COPY . .
 
