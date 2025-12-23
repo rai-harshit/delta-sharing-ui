@@ -150,6 +150,7 @@ export class OIDCClient {
           idToken: tokenSet.id_token!,
           expiresAt: new Date(Date.now() + (tokenSet.expires_in || 3600) * 1000),
         },
+        returnTo: session.returnTo,
       };
     } catch (error) {
       logger.error('OIDC callback failed', error);
@@ -172,8 +173,8 @@ export class OIDCClient {
       if (tokenSet.access_token) {
         userInfoClaims = await this.client!.userinfo(tokenSet.access_token);
       }
-    } catch (error) {
-      logger.warn('Failed to fetch userinfo', error);
+    } catch {
+      logger.warn('Failed to fetch userinfo');
     }
 
     // Merge claims

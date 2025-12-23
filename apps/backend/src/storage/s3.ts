@@ -201,7 +201,8 @@ export class S3StorageAdapter implements StorageAdapter {
         Key: filePath,
       });
 
-      const url = await getSignedUrl(this.client, command, { expiresIn: expiresInSeconds });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const url = await getSignedUrl(this.client as any, command as any, { expiresIn: expiresInSeconds });
       return url;
     } catch (error) {
       if (error instanceof S3ServiceException) {

@@ -59,7 +59,7 @@ export async function readParquetFile(
 ): Promise<ParquetReadResult> {
   const { limit = 1000, offset = 0 } = options;
   
-  let reader: ParquetReader | null = null;
+  let reader: Awaited<ReturnType<typeof ParquetReader.openFile>> | null = null;
   const rows: Record<string, unknown>[] = [];
   const schemaFields: { name: string; type: string }[] = [];
   

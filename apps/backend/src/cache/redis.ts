@@ -102,33 +102,37 @@ class RedisClient implements CacheClient {
 
     try {
       // Dynamic import to avoid requiring ioredis when not used
-      const { default: Redis } = await import('ioredis');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const ioredis = await import('ioredis') as any;
+      const Redis = ioredis.default ?? ioredis;
       
-      this.client = new Redis(redisUrl, {
+      const client = new Redis(redisUrl, {
         maxRetriesPerRequest: 3,
-        retryStrategy(times) {
+        retryStrategy: (times: number) => {
           const delay = Math.min(times * 50, 2000);
           return delay;
         },
         lazyConnect: true,
       });
+      
+      this.client = client;
 
-      this.client.on('error', (err) => {
+      client.on('error', (err: Error) => {
         logger.error('Redis connection error', err);
         this.connected = false;
       });
 
-      this.client.on('connect', () => {
+      client.on('connect', () => {
         logger.info('Redis connected');
         this.connected = true;
       });
 
-      this.client.on('close', () => {
+      client.on('close', () => {
         logger.warn('Redis connection closed');
         this.connected = false;
       });
 
-      await this.client.connect();
+      await client.connect();
     } catch (error) {
       logger.error('Failed to connect to Redis', error);
       this.client = null;

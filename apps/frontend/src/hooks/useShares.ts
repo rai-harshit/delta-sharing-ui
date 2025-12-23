@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api, Share, Schema, Table, TableMetadata } from '@/lib/api'
+import { api } from '@/lib/api'
 import { toast } from '@/hooks/useToast'
 
 export function useShares() {

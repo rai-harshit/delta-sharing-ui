@@ -333,7 +333,7 @@ class WebhookService {
         data: {
           webhookId,
           event,
-          payload: payload as unknown as Record<string, unknown>,
+          payload: payload as object,
           statusCode: result.statusCode,
           success: result.success,
           error: result.error,

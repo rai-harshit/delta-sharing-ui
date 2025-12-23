@@ -71,6 +71,7 @@ export interface OIDCCallbackResult {
     idToken: string;
     expiresAt: Date;
   };
+  returnTo?: string;
   error?: string;
 }
 

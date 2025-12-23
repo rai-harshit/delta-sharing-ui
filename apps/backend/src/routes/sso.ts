@@ -168,7 +168,7 @@ router.get('/callback', async (req: Request, res: Response, next) => {
           data: {
             ssoProvider: provider,
             ssoSubject: result.user.sub,
-            ssoMetadata: result.user.raw,
+            ssoMetadata: result.user.raw as object | undefined,
             lastLoginAt: new Date(),
           },
         });
@@ -187,7 +187,7 @@ router.get('/callback', async (req: Request, res: Response, next) => {
           role,
           ssoProvider: provider,
           ssoSubject: result.user.sub,
-          ssoMetadata: result.user.raw,
+          ssoMetadata: result.user.raw as object | undefined,
           mustChangePassword: false, // SSO users don't need password change
           lastLoginAt: new Date(),
         },

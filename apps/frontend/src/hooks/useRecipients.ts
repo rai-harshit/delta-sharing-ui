@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api, Recipient, Credential, AccessGrantOptions } from '@/lib/api'
+import { api, AccessGrantOptions } from '@/lib/api'
 import { toast } from '@/hooks/useToast'
 
 export function useRecipients() {

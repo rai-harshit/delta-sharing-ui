@@ -4,7 +4,6 @@ import { api, AuditLogFilters } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -31,7 +30,6 @@ import {
   Clock,
   Search,
   Download,
-  Filter,
   ChevronLeft,
   ChevronRight,
   CheckCircle2,
@@ -39,7 +37,7 @@ import {
   BarChart3,
   FileText,
 } from 'lucide-react'
-import { formatRelativeTime, formatBytes } from '@/lib/utils'
+import { formatRelativeTime } from '@/lib/utils'
 
 export function AuditDashboardPage() {
   const [days, setDays] = useState(30)
