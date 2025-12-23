@@ -16,19 +16,13 @@ import { logger } from '../utils/logger.js';
 // Metrics Registry
 // ============================================
 
-interface Gauge {
-  set: (value: number) => void;
-  inc: () => void;
-  dec: () => void;
-}
-
 // Simple in-memory metrics store (production would use prom-client)
 class MetricsStore {
   private histograms: Map<string, { buckets: number[]; values: { labels: Record<string, string>; value: number }[] }> = new Map();
   private counters: Map<string, { labels: Record<string, string>; value: number }[]> = new Map();
   private gauges: Map<string, number> = new Map();
 
-  histogram(name: string, help: string, options: { labelNames: string[]; buckets: number[] }) {
+  histogram(name: string, _help: string, options: { labelNames: string[]; buckets: number[] }) {
     if (!this.histograms.has(name)) {
       this.histograms.set(name, { buckets: options.buckets, values: [] });
     }
@@ -41,7 +35,7 @@ class MetricsStore {
     };
   }
 
-  counter(name: string, help: string, options: { labelNames: string[] }) {
+  counter(name: string, _help: string, _options: { labelNames: string[] }) {
     if (!this.counters.has(name)) {
       this.counters.set(name, []);
     }
@@ -62,7 +56,7 @@ class MetricsStore {
     };
   }
 
-  gauge(name: string, help: string) {
+  gauge(name: string, _help: string) {
     if (!this.gauges.has(name)) {
       this.gauges.set(name, 0);
     }

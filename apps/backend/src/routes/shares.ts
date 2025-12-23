@@ -1,7 +1,6 @@
 import { Router, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { 
-  authenticateToken, 
   requirePermission,
   Permissions,
   AuthenticatedRequest 
@@ -388,8 +387,8 @@ router.post('/', requirePermission(Permissions.SHARES_CREATE), async (req: Authe
     if (error instanceof z.ZodError) {
       return next(createError('Validation error', 400, error.errors));
     }
-    // Handle unique constraint violation
-    if ((error as any)?.code === 'P2002') {
+    // Handle unique constraint violation (Prisma error)
+    if (error instanceof Error && 'code' in error && error.code === 'P2002') {
       return next(createError('Share with this name already exists', 409));
     }
     next(error);
@@ -432,7 +431,8 @@ router.post('/:shareId/schemas', requirePermission(Permissions.SHARES_CREATE), a
     if (error instanceof z.ZodError) {
       return next(createError('Validation error', 400, error.errors));
     }
-    if ((error as any)?.code === 'P2002') {
+    // Handle unique constraint violation (Prisma error)
+    if (error instanceof Error && 'code' in error && error.code === 'P2002') {
       return next(createError('Schema with this name already exists in this share', 409));
     }
     next(error);
@@ -490,7 +490,8 @@ router.post('/:shareId/schemas/:schemaName/tables', requirePermission(Permission
     if (error instanceof z.ZodError) {
       return next(createError('Validation error', 400, error.errors));
     }
-    if ((error as any)?.code === 'P2002') {
+    // Handle unique constraint violation (Prisma error)
+    if (error instanceof Error && 'code' in error && error.code === 'P2002') {
       return next(createError('Table with this name already exists in this schema', 409));
     }
     next(error);

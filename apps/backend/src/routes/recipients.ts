@@ -159,7 +159,8 @@ router.post('/', requirePermission(Permissions.RECIPIENTS_CREATE), async (req: A
     if (error instanceof z.ZodError) {
       return next(createError('Validation error', 400, error.errors));
     }
-    if ((error as any)?.code === 'P2002') {
+    // Handle unique constraint violation (Prisma error)
+    if (error instanceof Error && 'code' in error && error.code === 'P2002') {
       return next(createError('Recipient with this name already exists', 409));
     }
     next(error);
