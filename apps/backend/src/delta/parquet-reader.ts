@@ -3,12 +3,10 @@
  * Reads Parquet files using parquetjs-lite
  */
 
-import parquet from 'parquetjs-lite';
+import parquet, { ParquetReader } from 'parquetjs-lite';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
-
-const { ParquetReader } = parquet;
 
 export interface ParquetReadResult {
   rows: Record<string, unknown>[];

@@ -10,8 +10,8 @@ const globalForPrisma = globalThis as unknown as {
 // Example: postgresql://user:pass@host:5432/db?connection_limit=10&pool_timeout=30
 const prismaClientOptions = {
   log: process.env.NODE_ENV === 'development' 
-    ? ['query', 'error', 'warn'] as const
-    : ['error'] as const,
+    ? (['query', 'error', 'warn'] as ('query' | 'error' | 'warn')[])
+    : (['error'] as ('error')[]),
   // Datasource configuration is handled via DATABASE_URL
   // For connection pooling, append to DATABASE_URL:
   // ?connection_limit=10&pool_timeout=30

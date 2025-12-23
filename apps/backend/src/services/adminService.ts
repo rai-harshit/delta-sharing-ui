@@ -34,7 +34,7 @@ export const adminService = {
       where: { email: email.toLowerCase() },
     });
 
-    if (!admin) {
+    if (!admin || !admin.passwordHash) {
       return null;
     }
 
@@ -62,6 +62,10 @@ export const adminService = {
 
     if (!admin) {
       throw new Error('Admin not found');
+    }
+
+    if (!admin.passwordHash) {
+      throw new Error('Cannot change password for SSO-only user');
     }
 
     const isValid = await bcrypt.compare(oldPassword, admin.passwordHash);

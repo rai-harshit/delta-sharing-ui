@@ -17,13 +17,19 @@ export function errorHandler(
   const statusCode = err.statusCode || 500;
   const message = err.message || 'Internal Server Error';
 
+  const errorResponse: Record<string, unknown> = { message };
+  
+  if (process.env.NODE_ENV === 'development' && err.stack) {
+    errorResponse.stack = err.stack;
+  }
+  
+  if (err.details !== undefined) {
+    errorResponse.details = err.details;
+  }
+
   res.status(statusCode).json({
     success: false,
-    error: {
-      message,
-      ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
-      ...(err.details && { details: err.details }),
-    },
+    error: errorResponse,
   });
 }
 

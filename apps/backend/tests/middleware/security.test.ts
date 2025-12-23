@@ -28,38 +28,38 @@ describe('Security Middleware', () => {
   });
 
   describe('CSRF Token Management', () => {
-    it('should generate a CSRF token', () => {
+    it('should generate a CSRF token', async () => {
       const sessionId = 'test-session-123';
-      const token = generateCsrfToken(sessionId);
+      const token = await generateCsrfToken(sessionId);
       
       expect(token).toBeDefined();
       expect(token.length).toBe(64); // 32 bytes = 64 hex chars
     });
 
-    it('should validate a correct CSRF token', () => {
+    it('should validate a correct CSRF token', async () => {
       const sessionId = 'test-session-456';
-      const token = generateCsrfToken(sessionId);
+      const token = await generateCsrfToken(sessionId);
       
-      const isValid = validateCsrfToken(sessionId, token);
+      const isValid = await validateCsrfToken(sessionId, token);
       expect(isValid).toBe(true);
     });
 
-    it('should reject an incorrect CSRF token', () => {
+    it('should reject an incorrect CSRF token', async () => {
       const sessionId = 'test-session-789';
-      generateCsrfToken(sessionId);
+      await generateCsrfToken(sessionId);
       
-      const isValid = validateCsrfToken(sessionId, 'wrong-token');
+      const isValid = await validateCsrfToken(sessionId, 'wrong-token');
       expect(isValid).toBe(false);
     });
 
-    it('should reject token for non-existent session', () => {
-      const isValid = validateCsrfToken('non-existent', 'some-token');
+    it('should reject token for non-existent session', async () => {
+      const isValid = await validateCsrfToken('non-existent', 'some-token');
       expect(isValid).toBe(false);
     });
 
-    it('should generate unique tokens for different sessions', () => {
-      const token1 = generateCsrfToken('session-1');
-      const token2 = generateCsrfToken('session-2');
+    it('should generate unique tokens for different sessions', async () => {
+      const token1 = await generateCsrfToken('session-1');
+      const token2 = await generateCsrfToken('session-2');
       
       expect(token1).not.toBe(token2);
     });
