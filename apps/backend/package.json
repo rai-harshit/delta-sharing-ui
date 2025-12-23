@@ -30,7 +30,7 @@
     "@azure/storage-blob": "^12.29.1",
     "@google-cloud/storage": "^7.18.0",
     "@prisma/client": "^5.7.1",
-    "bcryptjs": "^2.4.3",
+    "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -45,7 +45,7 @@
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
-    "@types/bcryptjs": "^2.4.6",
+    "@types/bcryptjs": "^3.0.0",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
