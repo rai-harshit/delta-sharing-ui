@@ -3,12 +3,16 @@
  */
 
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { 
   getTableMetadata, 
   getTableStats, 
   queryTable,
   validateDeltaTable,
 } from '../../src/delta/reader.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 describe('DeltaReader', () => {
   const dataDir = path.resolve(__dirname, '../../data');

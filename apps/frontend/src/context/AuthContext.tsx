@@ -16,6 +16,7 @@ interface RecipientUser {
   recipientId: string
   recipientName: string
   role: 'recipient'
+  mockMode?: boolean
 }
 
 type User = AdminUser | RecipientUser

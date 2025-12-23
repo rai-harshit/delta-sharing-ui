@@ -4,12 +4,11 @@
  * Renders a branded button for SSO login with the appropriate provider.
  */
 
-import React from 'react';
-
 interface SSOProvider {
   name: string;
   displayName: string;
   logoUrl?: string;
+  enabled?: boolean;
 }
 
 interface SSOButtonProps {

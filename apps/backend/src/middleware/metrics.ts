@@ -16,16 +16,6 @@ import { logger } from '../utils/logger.js';
 // Metrics Registry
 // ============================================
 
-interface Histogram {
-  labels: Record<string, string>;
-  observe: (value: number) => void;
-}
-
-interface Counter {
-  labels: Record<string, string>;
-  inc: () => void;
-}
-
 interface Gauge {
   set: (value: number) => void;
   inc: () => void;

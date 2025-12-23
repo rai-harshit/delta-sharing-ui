@@ -707,6 +707,7 @@ export interface Credential {
   endpoint: string;
   bearerToken: string;
   expirationTime: string;
+  tokenHint?: string;
 }
 
 export interface RecipientShare {

@@ -160,8 +160,10 @@ export function auditLogger(
 
   // Capture response data
   const originalJson = res.json.bind(res);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let responseData: any = null;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   res.json = function(data: any) {
     responseData = data;
     return originalJson(data);

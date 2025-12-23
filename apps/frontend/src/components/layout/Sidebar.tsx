@@ -141,7 +141,7 @@ export function Sidebar() {
         {/* Footer */}
         <div className="p-2 space-y-1">
           {/* Server Info */}
-          {!collapsed && user && (
+          {!collapsed && user && user.role === 'recipient' && (
             <div className="px-3 py-2 text-xs text-muted-foreground">
               <p className="truncate" title={user.serverUrl}>
                 {user.mockMode ? '🧪 Mock Mode' : user.serverUrl}

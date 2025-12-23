@@ -19,6 +19,7 @@ export interface ParquetReadResult {
 /**
  * Convert Parquet schema type to a simple string type
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getSimpleType(field: any): string {
   if (!field) return 'unknown';
   

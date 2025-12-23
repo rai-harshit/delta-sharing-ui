@@ -240,10 +240,12 @@ async function createDeltaTable(
   const commitFilePath = path.join(deltaLogDir, commitFileName);
   fs.writeFileSync(commitFilePath, logEntries.join('\n'));
 
+  // eslint-disable-next-line no-console
   console.log(`✅ Created Delta table: ${tableName} (${data.length} rows)`);
 }
 
 export async function generateSampleData(): Promise<void> {
+  // eslint-disable-next-line no-console
   console.log('🔄 Generating sample Delta tables...\n');
 
   // Ensure data directory exists
@@ -259,7 +261,9 @@ export async function generateSampleData(): Promise<void> {
   const productData = generateProductCatalog(500);
   await createDeltaTable('product_catalog', productData, SCHEMAS.product_catalog);
 
+  // eslint-disable-next-line no-console
   console.log('\n🎉 Sample data generation complete!');
+  // eslint-disable-next-line no-console
   console.log(`📁 Data location: ${DATA_DIR}`);
 }
 
@@ -268,5 +272,6 @@ export const createSampleDeltaTables = generateSampleData;
 
 // Run if executed directly
 if (process.argv[1]?.includes('sample-data')) {
+  // eslint-disable-next-line no-console
   generateSampleData().catch(console.error);
 }

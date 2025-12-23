@@ -43,7 +43,7 @@ import type { AdminUser } from '@/lib/api'
 type SettingsTab = 'account' | 'users'
 
 export function SettingsPage() {
-  const { user, changePassword, adminRole, hasPermission } = useAuth()
+  const { user, changePassword, hasPermission } = useAuth()
   const canManageUsers = hasPermission('admin_users:view')
   const [activeTab, setActiveTab] = useState<SettingsTab>('account')
 
@@ -172,7 +172,7 @@ function AccountTab({
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Email</p>
-              <p className="font-medium">{user?.email}</p>
+              <p className="font-medium">{user && 'email' in user ? user.email : '—'}</p>
             </div>
           </div>
           <Separator />
@@ -183,7 +183,7 @@ function AccountTab({
             <div>
               <p className="text-sm text-muted-foreground">Role</p>
               <Badge variant="outline" className="capitalize">
-                {user?.adminRole || user?.role}
+                {user?.role}
               </Badge>
             </div>
           </div>

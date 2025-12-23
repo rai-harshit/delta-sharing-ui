@@ -55,7 +55,7 @@ export function RecipientDetailPage() {
   const rotateToken = useRotateRecipientToken()
   const updateRecipient = useUpdateRecipient()
 
-  const [copied, setCopied] = useState(false)
+  const [_copied, setCopied] = useState(false)
   const [newCredentialCopied, setNewCredentialCopied] = useState(false)
   const [rotateConfirm, setRotateConfirm] = useState(false)
   const [newCredential, setNewCredential] = useState<typeof credential | null>(null)
@@ -79,9 +79,9 @@ export function RecipientDetailPage() {
   
   const grantAccess = useGrantAccess()
   const updateAccess = useUpdateAccess()
-  const revokeAccess = useRevokeAccess()
+  const _revokeAccess = useRevokeAccess()
 
-  const handleCopyCredential = async () => {
+  const _handleCopyCredential = async () => {
     if (credential) {
       await copyToClipboard(JSON.stringify(credential, null, 2))
       setCopied(true)
@@ -89,7 +89,7 @@ export function RecipientDetailPage() {
     }
   }
 
-  const handleDownloadCredential = () => {
+  const _handleDownloadCredential = () => {
     if (credential) {
       downloadAsJson(credential, `${recipient?.name}-credential.json`)
     }
