@@ -10,7 +10,7 @@
 #   docker build --build-arg BUILD_MODE=provider -t delta-sharing-ui:provider .
 #   docker build --build-arg BUILD_MODE=recipient -t delta-sharing-ui:recipient .
 
-FROM node:20-alpine AS base
+FROM node:25-alpine AS base
 
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
