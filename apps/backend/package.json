@@ -25,8 +25,8 @@
     "db:validate": "prisma validate"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.953.0",
-    "@aws-sdk/s3-request-presigner": "^3.956.0",
+    "@aws-sdk/client-s3": "^3.958.0",
+    "@aws-sdk/s3-request-presigner": "^3.958.0",
     "@azure/storage-blob": "^12.29.1",
     "@google-cloud/storage": "^7.18.0",
     "@prisma/client": "^5.7.1",
