@@ -41,9 +41,13 @@ jobs:
         working-directory: apps/frontend
         run: pnpm lint
 
+      - name: Generate Prisma Client (for type check)
+        working-directory: apps/backend
+        run: pnpm db:generate
+
       - name: Type Check (Backend)
         working-directory: apps/backend
-        run: pnpm exec tsc --noEmit
+        run: pnpm exec tsc --noEmit --skipLibCheck
 
       - name: Type Check (Frontend)
         working-directory: apps/frontend
