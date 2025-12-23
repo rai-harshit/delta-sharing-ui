@@ -899,7 +899,7 @@ export interface CreateAdminUserInput {
   email: string;
   password: string;
   name?: string;
-  role?: 'admin' | 'viewer';
+  role?: 'admin' | 'editor' | 'viewer';
 }
 
 // Webhook Types

@@ -13,7 +13,7 @@ interface SSOProvider {
   name: string
   displayName: string
   logoUrl?: string
-  enabled: boolean
+  enabled?: boolean
 }
 
 export function LoginPage() {
