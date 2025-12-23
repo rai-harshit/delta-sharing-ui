@@ -149,9 +149,10 @@ class Logger {
       delete entry.context;
     }
 
-    // Output
+    // Output - console is intentional here as this IS the logger
     if (isProduction) {
       // JSON format for production
+      // eslint-disable-next-line no-console
       console.log(JSON.stringify(entry));
     } else {
       // Pretty format for development
@@ -176,15 +177,19 @@ class Logger {
     const time = `${dim}${new Date(entry.timestamp).toLocaleTimeString()}${reset}`;
     const corrId = entry.correlationId ? `${dim}[${entry.correlationId.slice(0, 8)}]${reset} ` : '';
 
+    // eslint-disable-next-line no-console
     console.log(`${time} ${level} ${corrId}${entry.message}`);
 
     if (entry.context && Object.keys(entry.context).length > 0) {
+      // eslint-disable-next-line no-console
       console.log(`${dim}  Context: ${JSON.stringify(entry.context)}${reset}`);
     }
 
     if (entry.error) {
+      // eslint-disable-next-line no-console
       console.log(`${colors.error}  Error: ${entry.error.message}${reset}`);
       if (entry.error.stack) {
+        // eslint-disable-next-line no-console
         console.log(`${dim}${entry.error.stack}${reset}`);
       }
     }
@@ -201,8 +206,8 @@ export const logger = new Logger();
 // Express Middleware
 // ============================================
 
-// Store correlation ID in async context
-const correlationIdSymbol = Symbol('correlationId');
+// Correlation ID symbol reserved for future AsyncLocalStorage implementation
+// const correlationIdSymbol = Symbol('correlationId');
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace

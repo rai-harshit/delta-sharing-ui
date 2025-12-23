@@ -1,5 +1,4 @@
 import { prisma } from '../db/client.js';
-import { Prisma } from '@prisma/client';
 
 export interface CreateShareInput {
   name: string;

@@ -3,7 +3,7 @@
  * API endpoints for managing cloud storage configurations and browsing
  */
 
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { storageConfigService, CreateStorageConfigInput } from '../services/storageConfigService.js';
 import { storageBrowserService } from '../services/storageBrowserService.js';

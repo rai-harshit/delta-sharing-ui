@@ -265,7 +265,8 @@ export const storageBrowserService = {
       });
 
       // Add folders
-      const prefixes = (apiResponse as any)?.prefixes || [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const prefixes = (apiResponse as Record<string, any>)?.prefixes || [];
       for (const p of prefixes) {
         const folderName = p.replace(prefix, '').replace(/\/$/, '');
         if (folderName) {

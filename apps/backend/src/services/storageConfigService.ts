@@ -10,7 +10,7 @@ import { getEncryptionKey } from '../utils/encryption.js';
 // Encryption configuration
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 16;
-const AUTH_TAG_LENGTH = 16;
+// AUTH_TAG_LENGTH = 16 - reserved for future use with authenticated encryption
 
 /**
  * Encrypt a string value
@@ -139,6 +139,7 @@ export const storageConfigService = {
     }
 
     const config = await prisma.storageConfig.create({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       data: encryptedData as any,
     });
 
@@ -233,6 +234,7 @@ export const storageConfigService = {
 
     const config = await prisma.storageConfig.update({
       where: { id },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       data: updateData as any,
     });
 
@@ -256,7 +258,8 @@ export const storageConfigService = {
 
     if (!config) return null;
 
-    const decrypted: any = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const decrypted: Record<string, any> = {
       id: config.id,
       name: config.name,
       type: config.type,
@@ -383,7 +386,8 @@ export const storageConfigService = {
   /**
    * Mask sensitive fields for external responses
    */
-  maskConfig(config: any): StorageConfigResponse {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  maskConfig(config: Record<string, any>): StorageConfigResponse {
     return {
       id: config.id,
       name: config.name,
