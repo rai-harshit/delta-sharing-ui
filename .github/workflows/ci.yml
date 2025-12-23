@@ -199,7 +199,7 @@ jobs:
         run: pnpm test --project=chromium
 
       - name: Upload Playwright Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: always()
         with:
           name: playwright-report
@@ -238,14 +238,14 @@ jobs:
         run: pnpm build:full
 
       - name: Upload Backend Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: backend-dist
           path: apps/backend/dist
           retention-days: 7
 
       - name: Upload Frontend Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: frontend-dist
           path: apps/frontend/dist
