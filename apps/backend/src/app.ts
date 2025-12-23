@@ -136,6 +136,14 @@ async function shutdown(signal: string) {
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
 
-main();
+// Only start the server if this file is run directly (not imported for tests)
+const isMainModule = import.meta.url === `file://${process.argv[1]}` || 
+                     process.argv[1]?.endsWith('/src/app.ts') ||
+                     process.argv[1]?.endsWith('/dist/app.js');
 
+if (isMainModule) {
+  main();
+}
+
+export { main };
 export default app;

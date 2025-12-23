@@ -29,6 +29,13 @@ pnpm-debug.log*
 # Testing
 coverage/
 .nyc_output/
+playwright-report/
+test-results/
+
+# TypeScript build info
+*.tsbuildinfo
+vite.config.d.ts
+vite.config.js
 
 # Misc
 *.tgz

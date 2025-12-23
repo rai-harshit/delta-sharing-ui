@@ -30,7 +30,8 @@ describe('formatDate', () => {
   })
 
   it('formats Date object', () => {
-    const result = formatDate(new Date('2024-06-20'))
+    // Use a specific timestamp to avoid timezone issues
+    const result = formatDate(new Date('2024-06-20T12:00:00'))
     expect(result).toMatch(/Jun 20, 2024/)
   })
 })
