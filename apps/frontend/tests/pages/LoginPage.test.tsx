@@ -56,7 +56,7 @@ describe('LoginPage', () => {
     
     expect(screen.getByText(/sign in/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
+    expect(screen.getByLabelText('Password')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument()
   })
 
@@ -84,7 +84,7 @@ describe('LoginPage', () => {
   it('should allow typing in password field', () => {
     renderLoginPage()
     
-    const passwordInput = screen.getByLabelText(/password/i)
+    const passwordInput = screen.getByLabelText('Password')
     fireEvent.change(passwordInput, { target: { value: 'mypassword123' } })
     
     expect(passwordInput).toHaveValue('mypassword123')
@@ -93,7 +93,7 @@ describe('LoginPage', () => {
   it('should have password field with type password', () => {
     renderLoginPage()
     
-    const passwordInput = screen.getByLabelText(/password/i)
+    const passwordInput = screen.getByLabelText('Password')
     expect(passwordInput).toHaveAttribute('type', 'password')
   })
 

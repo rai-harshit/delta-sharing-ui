@@ -44,7 +44,7 @@ describe('useShares Hook', () => {
         { id: '2', name: 'share2', comment: 'Second share' },
       ]
       
-      vi.mocked(api.getShares).mockResolvedValue(mockShares)
+      vi.mocked(api.getShares).mockResolvedValue({ data: mockShares })
 
       const { result } = renderHook(() => useShares(), {
         wrapper: createWrapper(),
@@ -78,7 +78,7 @@ describe('useShares Hook', () => {
         schemas: [],
       }
 
-      vi.mocked(api.getShare).mockResolvedValue(mockShare)
+      vi.mocked(api.getShare).mockResolvedValue({ data: mockShare })
 
       const { result } = renderHook(() => useShare('1'), {
         wrapper: createWrapper(),
@@ -104,7 +104,7 @@ describe('useShares Hook', () => {
   describe('useCreateShare', () => {
     it('should create a share successfully', async () => {
       const newShare = { id: '3', name: 'new_share', comment: 'New share' }
-      vi.mocked(api.createShare).mockResolvedValue(newShare)
+      vi.mocked(api.createShare).mockResolvedValue({ data: newShare })
 
       const { result } = renderHook(() => useCreateShare(), {
         wrapper: createWrapper(),
@@ -114,16 +114,13 @@ describe('useShares Hook', () => {
 
       await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-      expect(api.createShare).toHaveBeenCalledWith({
-        name: 'new_share',
-        comment: 'New share',
-      })
+      expect(api.createShare).toHaveBeenCalledWith('new_share', 'New share')
     })
   })
 
   describe('useDeleteShare', () => {
     it('should delete a share successfully', async () => {
-      vi.mocked(api.deleteShare).mockResolvedValue(undefined)
+      vi.mocked(api.deleteShare).mockResolvedValue({ data: undefined })
 
       const { result } = renderHook(() => useDeleteShare(), {
         wrapper: createWrapper(),
