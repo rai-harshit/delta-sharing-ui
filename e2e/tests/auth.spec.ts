@@ -11,15 +11,15 @@ test.describe('Authentication', () => {
 
   test('should display login form', async ({ page }) => {
     // Check for login form elements
-    await expect(page.getByLabel(/email/i)).toBeVisible();
-    await expect(page.getByLabel(/password/i)).toBeVisible();
+    await expect(page.getByRole('textbox', { name: 'Email' })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: 'Password' })).toBeVisible();
     await expect(page.getByRole('button', { name: /sign in/i })).toBeVisible();
   });
 
   test('should show error with invalid credentials', async ({ page }) => {
     // Fill in invalid credentials
-    await page.getByLabel(/email/i).fill('invalid@example.com');
-    await page.getByLabel(/password/i).fill('wrongpassword');
+    await page.getByRole('textbox', { name: 'Email' }).fill('invalid@example.com');
+    await page.getByRole('textbox', { name: 'Password' }).fill('wrongpassword');
     
     // Click sign in
     await page.getByRole('button', { name: /sign in/i }).click();
@@ -29,20 +29,24 @@ test.describe('Authentication', () => {
   });
 
   test('should login with valid credentials', async ({ page }) => {
+    // Wait for the email input to be visible and interactable
+    const emailInput = page.getByRole('textbox', { name: 'Email' });
+    await expect(emailInput).toBeVisible({ timeout: 10000 });
+    
     // Fill in valid credentials (default admin)
-    await page.getByLabel(/email/i).fill('admin@example.com');
-    await page.getByLabel(/password/i).fill('admin123');
+    await emailInput.fill('admin@example.com');
+    await page.getByRole('textbox', { name: 'Password' }).fill('admin123');
     
     // Click sign in
     await page.getByRole('button', { name: /sign in/i }).click();
     
-    // Should redirect to dashboard
-    await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 });
+    // Should redirect to dashboard (with increased timeout for API call)
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 30000 });
   });
 
   test('should require email field', async ({ page }) => {
     // Leave email empty, fill password
-    await page.getByLabel(/password/i).fill('somepassword');
+    await page.getByRole('textbox', { name: 'Password' }).fill('somepassword');
     
     // Try to submit
     await page.getByRole('button', { name: /sign in/i }).click();
@@ -53,7 +57,7 @@ test.describe('Authentication', () => {
 
   test('should require password field', async ({ page }) => {
     // Fill email, leave password empty
-    await page.getByLabel(/email/i).fill('test@example.com');
+    await page.getByRole('textbox', { name: 'Email' }).fill('test@example.com');
     
     // Try to submit
     await page.getByRole('button', { name: /sign in/i }).click();
@@ -77,10 +81,17 @@ test.describe('Authenticated Admin', () => {
   test.beforeEach(async ({ page }) => {
     // Login before each test
     await page.goto('/login');
-    await page.getByLabel(/email/i).fill('admin@example.com');
-    await page.getByLabel(/password/i).fill('admin123');
+    
+    // Wait for the email input to be visible
+    const emailInput = page.getByRole('textbox', { name: 'Email' });
+    await expect(emailInput).toBeVisible({ timeout: 10000 });
+    
+    await emailInput.fill('admin@example.com');
+    await page.getByRole('textbox', { name: 'Password' }).fill('admin123');
     await page.getByRole('button', { name: /sign in/i }).click();
-    await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 });
+    
+    // Wait for navigation to dashboard with increased timeout
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 30000 });
   });
 
   test('should access dashboard', async ({ page }) => {

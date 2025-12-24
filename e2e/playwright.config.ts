@@ -71,40 +71,12 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: process.env.CI ? [
-    // In CI, start backend (built) and frontend (dev) separately with proper env vars
-    {
-      command: 'cd ../apps/backend && node dist/app.js',
-      url: 'http://localhost:5000/api/health',
-      timeout: 120000,
-      reuseExistingServer: false,
-      env: {
-        ...process.env,
-        NODE_ENV: 'test',
-        DATABASE_URL: process.env.DATABASE_URL || 'postgresql://postgres:password@localhost:5432/delta_ui_e2e',
-        JWT_SECRET: process.env.JWT_SECRET || 'e2e-test-secret-32-characters-long',
-        ENCRYPTION_KEY: process.env.ENCRYPTION_KEY || '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
-        PORT: '5000',
-        CORS_ORIGIN: 'http://localhost:3000',
-      },
-    },
-    {
-      command: 'cd ../apps/frontend && pnpm dev --host 0.0.0.0 --port 3000',
-      url: 'http://localhost:3000',
-      timeout: 120000,
-      reuseExistingServer: false,
-      env: {
-        ...process.env,
-        VITE_API_URL: 'http://localhost:5000',
-      },
-    },
-  ] : {
-    // For local dev, use the simple combined command
+  // In CI, servers are started by the workflow, so we don't need webServer config
+  // For local dev, start both servers automatically
+  webServer: process.env.CI ? undefined : {
     command: 'cd .. && pnpm dev',
     url: 'http://localhost:3000',
     reuseExistingServer: true,
     timeout: 120000,
   },
 });
-
-

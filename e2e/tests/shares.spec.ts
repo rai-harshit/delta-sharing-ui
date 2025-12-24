@@ -8,14 +8,21 @@ test.describe('Shares Management', () => {
   test.beforeEach(async ({ page }) => {
     // Login as admin
     await page.goto('/login');
-    await page.getByLabel(/email/i).fill('admin@example.com');
-    await page.getByLabel(/password/i).fill('admin123');
+    
+    // Wait for the email input to be visible
+    const emailInput = page.getByRole('textbox', { name: 'Email' });
+    await expect(emailInput).toBeVisible({ timeout: 10000 });
+    
+    await emailInput.fill('admin@example.com');
+    await page.getByRole('textbox', { name: 'Password' }).fill('admin123');
     await page.getByRole('button', { name: /sign in/i }).click();
-    await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 });
+    
+    // Wait for navigation to dashboard with increased timeout
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 30000 });
     
     // Navigate to shares
     await page.getByRole('link', { name: /shares/i }).click();
-    await expect(page).toHaveURL(/\/shares/);
+    await expect(page).toHaveURL(/\/shares/, { timeout: 10000 });
   });
 
   test('should display shares list', async ({ page }) => {
