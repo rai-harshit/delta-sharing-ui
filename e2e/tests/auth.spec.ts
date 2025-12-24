@@ -29,18 +29,14 @@ test.describe('Authentication', () => {
   });
 
   test('should login with valid credentials', async ({ page }) => {
-    // Wait for the email input to be visible and interactable
-    const emailInput = page.getByRole('textbox', { name: 'Email' });
-    await expect(emailInput).toBeVisible({ timeout: 10000 });
-    
     // Fill in valid credentials (default admin)
-    await emailInput.fill('admin@example.com');
+    await page.getByRole('textbox', { name: 'Email' }).fill('admin@example.com');
     await page.getByRole('textbox', { name: 'Password' }).fill('admin123');
     
     // Click sign in
     await page.getByRole('button', { name: /sign in/i }).click();
     
-    // Should redirect to dashboard (with increased timeout for API call)
+    // Should redirect to dashboard
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 30000 });
   });
 
@@ -81,46 +77,33 @@ test.describe('Authenticated Admin', () => {
   test.beforeEach(async ({ page }) => {
     // Login before each test
     await page.goto('/login');
-    
-    // Wait for the email input to be visible
-    const emailInput = page.getByRole('textbox', { name: 'Email' });
-    await expect(emailInput).toBeVisible({ timeout: 10000 });
-    
-    await emailInput.fill('admin@example.com');
+    await page.getByRole('textbox', { name: 'Email' }).fill('admin@example.com');
     await page.getByRole('textbox', { name: 'Password' }).fill('admin123');
     await page.getByRole('button', { name: /sign in/i }).click();
-    
-    // Wait for navigation to dashboard with increased timeout
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 30000 });
   });
 
   test('should access dashboard', async ({ page }) => {
-    await expect(page.getByText(/dashboard|overview/i)).toBeVisible();
+    // Use heading role to be specific - avoid matching sidebar link
+    await expect(page.getByRole('heading', { name: /dashboard/i, level: 1 })).toBeVisible();
   });
 
   test('should logout successfully', async ({ page }) => {
-    // Find and click logout (might be in dropdown)
-    const userMenu = page.getByRole('button', { name: /user|profile|menu/i });
-    if (await userMenu.isVisible()) {
-      await userMenu.click();
-    }
-    
-    const logoutButton = page.getByRole('button', { name: /logout|sign out/i });
-    if (await logoutButton.isVisible()) {
-      await logoutButton.click();
-      await expect(page).toHaveURL(/\/login/);
-    }
+    // Click logout button directly (it's visible in sidebar)
+    const logoutButton = page.getByRole('button', { name: /logout/i });
+    await expect(logoutButton).toBeVisible();
+    await logoutButton.click();
+    await expect(page).toHaveURL(/\/login/, { timeout: 10000 });
   });
 
   test('should navigate to shares page', async ({ page }) => {
-    await page.getByRole('link', { name: /shares/i }).click();
+    await page.getByRole('link', { name: /^shares$/i }).click();
     await expect(page).toHaveURL(/\/shares/);
   });
 
   test('should navigate to recipients page', async ({ page }) => {
-    await page.getByRole('link', { name: /recipients/i }).click();
+    // Click the Recipients link in the sidebar navigation
+    await page.locator('nav').getByRole('link', { name: /recipients/i }).click();
     await expect(page).toHaveURL(/\/recipients/);
   });
 });
-
-

@@ -108,34 +108,38 @@ export function rateLimit(config: RateLimitConfig) {
  * Pre-configured rate limiters for different use cases
  */
 
-// Check if we're in development mode
+// Check if we're in development or test mode
 const isDev = process.env.NODE_ENV !== 'production';
+const isTest = process.env.NODE_ENV === 'test';
 
-// Standard API rate limit: 100 requests per minute (500 in dev)
+// In test mode, use very high limits to avoid rate limiting during E2E tests
+const testMultiplier = isTest ? 100 : 1;
+
+// Standard API rate limit: 100 requests per minute (500 in dev, 50000 in test)
 export const apiRateLimit = rateLimit({
   windowMs: 60 * 1000,
-  maxRequests: isDev ? 500 : 100,
+  maxRequests: (isDev ? 500 : 100) * testMultiplier,
   message: 'Too many API requests. Please slow down.',
 });
 
-// Auth rate limit: 10 login attempts per 15 minutes (50 in dev)
+// Auth rate limit: 10 login attempts per 15 minutes (50 in dev, 5000 in test)
 export const authRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000,
-  maxRequests: isDev ? 50 : 10,
+  maxRequests: (isDev ? 50 : 10) * testMultiplier,
   message: 'Too many login attempts. Please try again later.',
   skipSuccessfulRequests: true,  // Only count failed attempts
 });
 
-// Delta protocol rate limit: 1000 requests per minute (5000 in dev)
+// Delta protocol rate limit: 1000 requests per minute (5000 in dev, 500000 in test)
 export const deltaProtocolRateLimit = rateLimit({
   windowMs: 60 * 1000,
-  maxRequests: isDev ? 5000 : 1000,
+  maxRequests: (isDev ? 5000 : 1000) * testMultiplier,
   message: 'Too many data requests. Please slow down.',
 });
 
-// Admin operations rate limit: 30 requests per minute (300 in dev)
+// Admin operations rate limit: 30 requests per minute (300 in dev, 30000 in test)
 export const adminRateLimit = rateLimit({
   windowMs: 60 * 1000,
-  maxRequests: isDev ? 300 : 30,
+  maxRequests: (isDev ? 300 : 30) * testMultiplier,
   message: 'Too many admin operations. Please slow down.',
 });

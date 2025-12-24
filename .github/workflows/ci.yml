@@ -202,6 +202,7 @@ jobs:
       - name: Start Backend Server
         working-directory: apps/backend
         env:
+          NODE_ENV: test
           DATABASE_URL: postgresql://postgres:password@localhost:5432/delta_ui_e2e
           JWT_SECRET: e2e-test-secret-32-characters-long
           ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
