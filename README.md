@@ -251,6 +251,8 @@ Access points:
 - Admin UI: http://localhost
 - Delta Sharing API: http://localhost/delta
 - Health check: http://localhost/health
+- API Documentation: http://localhost:5000/api/docs/ui
+- Prometheus Metrics: http://localhost:5000/metrics
 
 ### Kubernetes Deployment (Helm)
 
@@ -324,6 +326,26 @@ Delta Sharing UI supports enterprise SSO via OpenID Connect (OIDC). See [SSO Set
 2. Configure the callback URL: `https://your-domain.com/api/sso/callback`
 3. Set environment variables (OIDC_ISSUER_URL, OIDC_CLIENT_ID, OIDC_CLIENT_SECRET)
 4. Enable SSO in the Admin Settings page
+
+### Observability
+
+Built-in monitoring and health check endpoints:
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /health` | Basic health check (liveness) |
+| `GET /health/live` | Kubernetes liveness probe (memory check) |
+| `GET /health/ready` | Kubernetes readiness probe (database, OSS server) |
+| `GET /health/detailed` | Full system status with memory, CPU, dependencies |
+| `GET /metrics` | Prometheus metrics (request counts, latencies, errors) |
+| `GET /api/docs` | OpenAPI 3.0 specification (JSON) |
+| `GET /api/docs/ui` | Swagger UI for interactive API exploration |
+
+**Prometheus Metrics Exposed:**
+- `http_request_duration_seconds` - Request latency histogram
+- `http_requests_total` - Total request count by route, method, status
+- `delta_sharing_queries_total` - Delta protocol query counts
+- `active_connections` - Current active connections
 
 ### Rate Limiting
 
@@ -591,6 +613,15 @@ POST /api/webhooks/:id/test               # Send test event
 GET  /api/sso/providers                   # List available SSO providers
 GET  /api/sso/:providerId/authorize       # Initiate SSO login
 GET  /api/sso/callback                    # Handle SSO callback
+
+# Health & Monitoring (no auth required)
+GET  /health                              # Basic health check
+GET  /health/live                         # Kubernetes liveness probe
+GET  /health/ready                        # Kubernetes readiness probe
+GET  /health/detailed                     # Full system diagnostics
+GET  /metrics                             # Prometheus metrics
+GET  /api/docs                            # OpenAPI spec (JSON)
+GET  /api/docs/ui                         # Swagger UI
 ```
 
 ### Webhook Events
