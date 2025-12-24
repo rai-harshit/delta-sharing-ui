@@ -86,8 +86,10 @@ The [Delta Sharing protocol](https://github.com/delta-io/delta-sharing) is a pow
 | **Role-Based Access Control** | Admin, Editor, and Viewer roles with granular permissions |
 | **Admin User Management** | Create, list, and delete admin users with different roles |
 | **Audit Dashboard** | Visualize access patterns, query volumes, top tables/recipients |
+| **Webhooks** | Trigger HTTP callbacks on share access, token rotation, and more |
+| **SSO/OIDC Authentication** | Enterprise login via Okta, Azure AD, Google, or any OIDC provider |
 | **Notifications** | Alerts for expiring tokens, storage issues, and system events |
-| **Settings Page** | Change password, manage users, configure system settings |
+| **Settings Page** | Change password, manage users, configure SSO, system settings |
 | **Table Aliases** | Give user-friendly names to internal tables |
 | **Data Preview** | Preview table data and schema before sharing |
 | **Multi-Cloud Support** | Configure multiple storage backends with encrypted credentials |
@@ -144,6 +146,7 @@ Configure granular access for each recipient:
 
 ### Enterprise-Ready Security
 
+- **SSO/OIDC Authentication** - Enterprise login via Okta, Azure AD, Google, or any OIDC provider
 - **JWT Authentication** for admin users with role-based permissions
 - **API-Level Permission Enforcement** - all endpoints validate user permissions
 - **Hashed Token Storage** (never store plaintext)
@@ -151,6 +154,7 @@ Configure granular access for each recipient:
 - **Rate Limiting** on API endpoints (configurable for dev/prod)
 - **Time-Limited Access Grants** with expiration warnings
 - **Comprehensive Audit Logs** with IP, user agent, duration tracking
+- **Webhook Notifications** for real-time event integrations
 - **Notification System** for security-relevant events
 
 ---
@@ -248,6 +252,21 @@ Access points:
 - Delta Sharing API: http://localhost/delta
 - Health check: http://localhost/health
 
+### Kubernetes Deployment (Helm)
+
+```bash
+# Add the chart (from local)
+helm install delta-sharing-ui ./helm/delta-sharing-ui \
+  --set backend.env.JWT_SECRET=$(openssl rand -hex 32) \
+  --set backend.env.ENCRYPTION_KEY=$(openssl rand -hex 32) \
+  --set backend.env.DATABASE_URL="postgresql://user:pass@postgres:5432/delta"
+
+# Or with custom values file
+helm install delta-sharing-ui ./helm/delta-sharing-ui -f my-values.yaml
+```
+
+See [helm/delta-sharing-ui/values.yaml](helm/delta-sharing-ui/values.yaml) for all configuration options.
+
 ---
 
 ## ⚙️ Configuration
@@ -280,7 +299,31 @@ AZURE_STORAGE_ACCESS_KEY=
 
 GCS_PROJECT_ID=
 GCS_KEY_FILE=
+
+# SSO/OIDC Configuration (optional)
+OIDC_ISSUER_URL=https://your-idp.okta.com
+OIDC_CLIENT_ID=your-client-id
+OIDC_CLIENT_SECRET=your-client-secret
+OIDC_CALLBACK_URL=http://localhost:5000/api/sso/callback
 ```
+
+### SSO/OIDC Authentication
+
+Delta Sharing UI supports enterprise SSO via OpenID Connect (OIDC). See [SSO Setup Guide](docs/authentication/sso-setup.md) for detailed configuration.
+
+**Supported Providers:**
+- Okta
+- Azure Active Directory
+- Google Workspace
+- Auth0
+- Any OIDC-compliant identity provider
+
+**Quick Setup:**
+
+1. Register an application in your identity provider
+2. Configure the callback URL: `https://your-domain.com/api/sso/callback`
+3. Set environment variables (OIDC_ISSUER_URL, OIDC_CLIENT_ID, OIDC_CLIENT_SECRET)
+4. Enable SSO in the Admin Settings page
 
 ### Rate Limiting
 
@@ -356,9 +399,13 @@ Rate limits are automatically adjusted based on environment:
 | State Management | TanStack Query v5 |
 | Backend | Node.js, Express.js, TypeScript |
 | Database | PostgreSQL + Prisma ORM |
+| Authentication | JWT + OIDC (openid-client) |
 | Delta Protocol | Official OSS Delta Sharing Server (Scala/JVM) |
 | Containerization | Docker + Docker Compose |
+| Orchestration | Kubernetes + Helm |
 | Reverse Proxy | Nginx |
+| Testing | Jest, Vitest, Playwright (E2E) |
+| CI/CD | GitHub Actions |
 
 ---
 
@@ -374,14 +421,19 @@ delta-sharing-ui/
 │   │   │   │   ├── shares.ts           # Admin share management
 │   │   │   │   ├── recipients.ts       # Recipient management
 │   │   │   │   ├── admin.ts            # Audit logs, users, notifications
+│   │   │   │   ├── webhooks.ts         # Webhook management
+│   │   │   │   ├── sso.ts              # SSO/OIDC authentication
 │   │   │   │   └── storage.ts          # Storage configuration
 │   │   │   ├── services/           # Business logic
 │   │   │   │   ├── ossProxyService.ts      # OSS server integration
 │   │   │   │   ├── configSyncService.ts    # Config sync to OSS
 │   │   │   │   ├── notificationService.ts  # System notifications
+│   │   │   │   ├── webhookService.ts       # Webhook delivery
 │   │   │   │   ├── adminService.ts         # Admin user management
 │   │   │   │   ├── auditService.ts         # Audit logging
 │   │   │   │   └── recipientService.ts     # Recipient management
+│   │   │   ├── auth/               # Authentication
+│   │   │   │   └── oidc/           # OIDC/SSO implementation
 │   │   │   ├── middleware/         # Auth, rate limiting, audit
 │   │   │   │   ├── auth.ts             # JWT + RBAC permissions
 │   │   │   │   ├── rateLimit.ts        # Configurable rate limiting
@@ -420,6 +472,17 @@ delta-sharing-ui/
 │   ├── init-hybrid.sh              # Initialize hybrid deployment
 │   ├── generate-jwt-secret.sh      # Generate JWT secret
 │   └── generate-encryption-key.sh  # Generate encryption key
+├── e2e/                            # End-to-end tests
+│   ├── tests/                      # Playwright test specs
+│   │   ├── auth.spec.ts            # Authentication tests
+│   │   ├── shares.spec.ts          # Share management tests
+│   │   └── recipient-portal.spec.ts # Recipient portal tests
+│   └── playwright.config.ts        # Playwright configuration
+├── helm/                           # Kubernetes Helm chart
+│   └── delta-sharing-ui/
+│       ├── Chart.yaml
+│       ├── values.yaml
+│       └── templates/              # K8s resource templates
 ├── docker-compose.yml              # Standalone deployment
 ├── docker-compose.hybrid.yml       # Hybrid mode (recommended)
 ├── docker-compose.provider.yml     # Provider-only deployment
@@ -514,6 +577,49 @@ PUT  /api/storage/configs/:id             # Update storage config
 DELETE /api/storage/configs/:id           # Delete storage config
 POST /api/storage/configs/:id/test        # Test connection
 GET  /api/storage/browse/:configId/*      # Browse storage
+
+# Webhooks (requires webhooks:view, webhooks:create, etc.)
+GET  /api/webhooks                        # List webhooks
+POST /api/webhooks                        # Create webhook
+GET  /api/webhooks/:id                    # Get webhook details
+PUT  /api/webhooks/:id                    # Update webhook
+DELETE /api/webhooks/:id                  # Delete webhook
+GET  /api/webhooks/:id/deliveries         # View delivery history
+POST /api/webhooks/:id/test               # Send test event
+
+# SSO (if configured)
+GET  /api/sso/providers                   # List available SSO providers
+GET  /api/sso/:providerId/authorize       # Initiate SSO login
+GET  /api/sso/callback                    # Handle SSO callback
+```
+
+### Webhook Events
+
+Configure webhooks to receive real-time notifications:
+
+| Event | Description |
+|-------|-------------|
+| `share.created` | A new share was created |
+| `share.deleted` | A share was deleted |
+| `share.accessed` | A recipient accessed a share |
+| `recipient.created` | A new recipient was created |
+| `recipient.deleted` | A recipient was deleted |
+| `token.rotated` | A recipient token was rotated |
+| `token.expiring` | A token is about to expire |
+
+**Webhook Payload Example:**
+```json
+{
+  "event": "share.accessed",
+  "timestamp": "2024-12-24T10:30:00Z",
+  "data": {
+    "shareId": "share-123",
+    "shareName": "sales_data",
+    "recipientId": "recipient-456",
+    "recipientName": "analytics_team",
+    "tableName": "transactions"
+  }
+}
 ```
 
 ---
@@ -542,20 +648,56 @@ pnpm build            # Build for production
 pnpm test             # Run tests
 pnpm db:push          # Push schema to database
 pnpm db:seed          # Seed sample data
+
+# E2E Tests (e2e/)
+pnpm test             # Run Playwright E2E tests
+pnpm test:ui          # Run with Playwright UI
+pnpm test:headed      # Run in headed browser mode
+```
+
+### Running E2E Tests Locally
+
+```bash
+# 1. Start the development servers
+pnpm dev
+
+# 2. In another terminal, run E2E tests
+cd e2e
+pnpm test
+
+# Or run specific test files
+pnpm exec playwright test auth.spec.ts
+pnpm exec playwright test shares.spec.ts
+pnpm exec playwright test recipient-portal.spec.ts
 ```
 
 ### Building Docker Images
 
 ```bash
-# Build all modes
-cd apps/frontend
-docker build -t delta-sharing-ui:full .
-docker build --build-arg BUILD_MODE=provider -t delta-sharing-ui:provider .
-docker build --build-arg BUILD_MODE=recipient -t delta-sharing-ui:recipient .
+# Build all modes (from repository root)
+docker build -t delta-sharing-ui-backend:latest -f apps/backend/Dockerfile .
+docker build -t delta-sharing-ui:full -f apps/frontend/Dockerfile .
+docker build --build-arg BUILD_MODE=provider -t delta-sharing-ui:provider -f apps/frontend/Dockerfile .
+docker build --build-arg BUILD_MODE=recipient -t delta-sharing-ui:recipient -f apps/frontend/Dockerfile .
 
 # Lightweight recipient-only image
-docker build -f Dockerfile.recipient -t delta-sharing-ui:recipient-only .
+docker build -t delta-sharing-ui:recipient-only -f apps/frontend/Dockerfile.recipient .
 ```
+
+### CI/CD Pipeline
+
+The project includes a comprehensive GitHub Actions workflow (`.github/workflows/ci.yml`):
+
+| Job | Description |
+|-----|-------------|
+| **Lint** | ESLint checks for backend and frontend |
+| **Type Check** | TypeScript compilation for both apps |
+| **Backend Tests** | Jest unit tests with coverage |
+| **Frontend Tests** | Vitest component and hook tests |
+| **E2E Tests** | Playwright browser tests |
+| **Docker Build** | Validates Docker image builds |
+
+All checks must pass before merging to main.
 
 ---
 
@@ -600,11 +742,14 @@ Delta Sharing UI complements the Delta Sharing ecosystem by:
 - [x] NDJSON protocol compliance
 - [x] API-level permission enforcement
 - [x] Configurable rate limiting
-- [ ] SSO/SAML integration
+- [x] SSO/OIDC integration (Okta, Azure AD, Google, etc.)
+- [x] Webhook notifications for events
+- [x] Kubernetes Helm chart
+- [x] E2E testing with Playwright
 - [ ] Slack/Teams notifications for access requests
 - [ ] Terraform provider for infrastructure-as-code
-- [ ] Kubernetes Helm chart
 - [ ] Unity Catalog integration
+- [ ] GraphQL API layer
 
 ---
 
