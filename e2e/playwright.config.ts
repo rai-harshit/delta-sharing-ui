@@ -79,6 +79,7 @@ export default defineConfig({
       timeout: 120000,
       reuseExistingServer: false,
       env: {
+        ...process.env,
         NODE_ENV: 'test',
         DATABASE_URL: process.env.DATABASE_URL || 'postgresql://postgres:password@localhost:5432/delta_ui_e2e',
         JWT_SECRET: process.env.JWT_SECRET || 'e2e-test-secret-32-characters-long',
@@ -93,6 +94,7 @@ export default defineConfig({
       timeout: 120000,
       reuseExistingServer: false,
       env: {
+        ...process.env,
         VITE_API_URL: 'http://localhost:5000',
       },
     },

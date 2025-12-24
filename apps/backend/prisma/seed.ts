@@ -37,6 +37,29 @@ async function main() {
   console.log('   Password: changeme');
   console.log('   (You will be prompted to change this on first login)');
 
+  // Create test admin user for E2E tests (with known credentials)
+  const testPassword = 'admin123';
+  const testPasswordHash = await bcrypt.hash(testPassword, 12);
+  
+  await prisma.adminUser.upsert({
+    where: { email: 'admin@example.com' },
+    update: {
+      passwordHash: testPasswordHash,
+      mustChangePassword: false, // Don't require password change for test user
+    },
+    create: {
+      email: 'admin@example.com',
+      passwordHash: testPasswordHash,
+      name: 'Test Admin',
+      role: 'admin',
+      mustChangePassword: false,
+    },
+  });
+
+  console.log('✅ Created test admin user (for E2E tests):');
+  console.log('   Email:    admin@example.com');
+  console.log('   Password: admin123');
+
   // Get absolute path to data directory
   const dataDir = path.resolve(process.cwd(), 'data');
 
