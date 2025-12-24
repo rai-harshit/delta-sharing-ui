@@ -164,6 +164,25 @@ async function main() {
     },
   });
 
+  // Create a known test token for E2E tests
+  // Plain token: e2e_test_token_1234567890abcdef1234567890abcdef1234567890abcdef
+  const testToken = 'e2e_test_token_1234567890abcdef1234567890abcdef1234567890abcdef';
+  const testTokenHash = await bcrypt.hash(testToken, 10);
+  
+  // Delete existing tokens for this recipient and create new one
+  await prisma.recipientToken.deleteMany({
+    where: { recipientId: recipient.id }
+  });
+  
+  await prisma.recipientToken.create({
+    data: {
+      recipientId: recipient.id,
+      token: testTokenHash,
+      tokenHint: testToken.substring(0, 8),
+      isActive: true,
+    },
+  });
+
   // Grant access to sales_data share
   await prisma.accessGrant.upsert({
     where: { recipientId_shareId: { recipientId: recipient.id, shareId: salesShare.id } },
@@ -176,6 +195,7 @@ async function main() {
   });
 
   console.log('✅ Created demo recipient with access to sales_data');
+  console.log('   Token for E2E tests: e2e_test_token_1234567890abcdef1234567890abcdef1234567890abcdef');
 
   console.log('');
   console.log('🎉 Seeding complete!');
