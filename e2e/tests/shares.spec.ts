@@ -94,8 +94,7 @@ test.describe('Shares Management', () => {
     await expect(page.getByRole('dialog')).toBeVisible();
   });
 
-  // Skip: Delete functionality requires specific confirmation flow that varies
-  test.skip('should delete a share', async ({ page }) => {
+  test('should delete a share', async ({ page }) => {
     // First create a share to delete
     const shareName = `delete_me_${Date.now()}`;
     await page.getByRole('button', { name: /create|add|new/i }).click();
@@ -103,21 +102,24 @@ test.describe('Shares Management', () => {
     await page.getByRole('button', { name: 'Create Share' }).click();
     await expect(page.getByText(shareName)).toBeVisible({ timeout: 10000 });
     
-    // Find the share row and delete button (look for button with trash icon or delete action)
+    // Find the share row and click the dropdown menu trigger (MoreHorizontal icon button)
     const row = page.locator('tr', { hasText: shareName });
-    const actionButton = row.locator('button').last();
+    const menuTrigger = row.getByRole('button');
+    await menuTrigger.click();
     
-    if (await actionButton.isVisible()) {
-      await actionButton.click();
-      
-      // Confirm deletion if confirmation dialog appears
-      const confirmBtn = page.getByRole('button', { name: /confirm|yes|delete/i });
-      if (await confirmBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await confirmBtn.click();
-      }
-      
-      // Share should be removed
-      await expect(page.getByText(shareName)).not.toBeVisible({ timeout: 10000 });
-    }
+    // Click "Delete" in the dropdown menu
+    await page.getByRole('menuitem', { name: /delete/i }).click();
+    
+    // Confirmation dialog should appear - click the destructive "Delete" button
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole('button', { name: 'Delete' }).click();
+    
+    // Wait for dialog to close
+    await expect(dialog).not.toBeVisible({ timeout: 10000 });
+    
+    // Share should be removed from the table (check specifically in table, not anywhere on page)
+    const table = page.locator('table');
+    await expect(table.getByText(shareName)).not.toBeVisible({ timeout: 10000 });
   });
 });
